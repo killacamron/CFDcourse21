@@ -86,7 +86,7 @@ while termcond >= reltol:
         # Dirichlet BCs for Reactor Inlet
         A[0] = F_a
         B[0] = F_b
-        # Neumann BCs for 
+        # Neumann BCs for Reactor Outlet
         A[nx1-1] = A[nx1-2] 
         B[nx1-1] = B[nx1-2] 
         C[nx1-1] = C[nx1-2] 
