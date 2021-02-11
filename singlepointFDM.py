@@ -3,6 +3,9 @@
 Finite Difference Method Code for Forward, Backward, and Central Difference
 Schemes for single points and basic polynomials.
 Generates plots and calculates slope showing order of each method.
+Written by: Cameron Armstrong (2020)
+Institution: Virginia Commonwealth University
+
 """
 
 import numpy as np
