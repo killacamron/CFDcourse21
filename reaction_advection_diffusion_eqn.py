@@ -36,11 +36,12 @@ T1 = 150 + 273.15                           # set-point temperature (K)
 k1 = k01*np.exp(-Ea1/R/T1)                  # rate constant calc (L/mol/s)
 p = 0                                       # iteration counter
 
-# solution and temp. solution array initialization for each species 
-A = np.ones(nx1)
-An = np.ones(nx1)
-B = np.ones(nx1)
-Bn = np.ones(nx1)
+# array initialization for each species (also the ICs)
+# assumes ICs for reagents to be inlet concentration
+A = np.ones(nx1)*F_a
+An = np.ones(nx1)*F_a
+B = np.ones(nx1)*F_b
+Bn = np.ones(nx1)*F_b
 C = np.zeros(nx1)
 Cn = np.zeros(nx1)
 
@@ -82,9 +83,10 @@ while termcond >= reltol:
         An = A.copy()
         Bn = B.copy()
         Cn = C.copy()
-        # BC's
+        # Dirichlet BCs for Reactor Inlet
         A[0] = F_a
         B[0] = F_b
+        # Neumann BCs for 
         A[nx1-1] = A[nx1-2] 
         B[nx1-1] = B[nx1-2] 
         C[nx1-1] = C[nx1-2] 
