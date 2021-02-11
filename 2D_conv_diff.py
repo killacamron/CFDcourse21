@@ -1,13 +1,16 @@
-"""
-Explicit Finite Difference Method Code
-Solves the 2D Temperature Convection-Diffusion Equation
-Assumes Tubular Plug-Flow-Reactor in Laminar Regime 
-Heat Source-Sink Included Uses Laminar Nusselt Correlation for "h"
-Written by: Cameron Armstrong (2020)
-Institution: Virginia Commonwealth University
+# =============================================================================
+# 
+# Explicit Finite Difference Method Code
+# Solves the 2D Temperature Convection-Diffusion Equation
+# Assumes Tubular Plug-Flow-Reactor in Laminar Regime 
+# Assumes hagen poiseuille velocity profile
+# Heat Source-Sink Included Uses Laminar Nusselt Correlation for "h"
+# Written by: Cameron Armstrong (2020)
+# Institution: Virginia Commonwealth University
+# 
+# =============================================================================
 
-"""
-
+# Required Modules
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import cm
@@ -15,58 +18,68 @@ from mpl_toolkits.mplot3d import Axes3D
 import math
 from array import array
 
-D = 0.0015875 # tubing diameter in m
-xl = 30/100 # tubing length in m (cm/100) & x range
-yl = D # tubing diameter & y range
-nx = 300 # x grid resolution
-ny = 50 # y grid resolution
-dx = xl/(nx-1) # x step
-dy = yl/(ny-1) # y step
-k= .12 # thermal conductvity W/(m*K)
-p = 1750 # density (kg/m^3)
-Cp = 1172 # constant pressure specifc heat (J/kg/K)
-a = k/(p*Cp) # alpha - thermal diffusivity m2/s
-sigma = .01 # time step factor
-dt = sigma * dx * dy / a # time step 
-Vr = math.pi*(D/2)**2*xl # tubing volume in m
-Qmlm = 1 # volumetric flowrate in mL/min
-Q = (Qmlm*10**-6)/60 # volumetric flowrate in m3/s
-Ac = math.pi*(D/2)**2 # cross-sectional area in m2
-lamx = a*dt/dx**2 # lumped coefficient
-lamy = a*dt/dy**2 # lumped coefficient
-Nu = 3.66 # nusselt number laminar flow in tube
-h = Nu*k/D # convective heat transfer coefficient (W/m2/K)
-T0 = 130+273.15 # stream inlet temperature in degK
-Tw = 25+273.15 # wall temperature in degK
-reltol = 1e-9 # tolerance for convergence  
+D = 0.0015875                                   # tubing diameter in m
+xl = 30/100                                     # tubing length in m & x range
+yl = D                                          # tubing diameter & y range
+nx = 300                                        # x grid points
+ny = 50                                         # y grid points
+dx = xl/(nx-1)                                  # x stepsize
+dy = yl/(ny-1)                                  # y stepsize
+k= .12                                          # thermal conductvity W/(m*K)
+p = 1750                                        # density (kg/m3)
+Cp = 1172                                       # specifc heat (J/kg/K)
+a = k/(p*Cp)                                    # thermal diffusivity (m2/s)
+sigma = .001                                    # time step factor
+dt = sigma * dx * dy / a                        # time stepsize 
+Vr = math.pi*(D/2)**2*xl                        # tubing volume (m3)
+Qmlm = 1                                        # volumetric flowrate (mL/min)
+Q = (Qmlm*10**-6)/60                            # volumetric flowrate (m3/s)
+Ac = math.pi*(D/2)**2                           # cross-sectional area (m2)
+lamx = a*dt/dx**2                               # lumped coefficient
+lamy = a*dt/dy**2                               # lumped coefficient
+Nu = 3.66                                       # nusselt laminar flow in tube
+h = Nu*k/D                                      # convective heat transfer coefficient (W/m2/K)
+T0 = 130+273.15                                 # stream inlet temperature (degK)
+Tw = 25+273.15                                  # wall temperature (degK)
+reltol = 1e-8                                   # tolerance for convergence  
 
-x = np.linspace(0, xl, nx) # x grid
-y = np.linspace(0, yl, ny) # y grid
-X, Y = np.meshgrid(x, y) # mesh of nodes
+# grid formation
+x = np.linspace(0, xl, nx) 
+y = np.linspace(0, yl, ny) 
+X, Y = np.meshgrid(x, y) 
 
-uAvg = Q/Ac # average velocity m/s
-uMax = 2*uAvg # max velocity m/s
-u = np.zeros(ny)
-u[:] = np.linspace(-(D/2),(D/2),ny) # array intialization
-u[:] = uMax*(1-(u[:]/(D/2))**2) # fully-developed hagan-poiselle profile
-u[0]=u[-1]=0 # no slip BC
-u = np.array([u,]*nx) # velocity field
-u = u.T # transpose/align field
+# hagen poiseuille velocity field generation
+uAvg = Q/Ac                                     # average velocity (m/s)
+uMax = 2*uAvg                                   # max velocity (m/s)
+u = np.zeros(ny)                                # array initilization
+u[:] = np.linspace(-(D/2),(D/2),ny)             # array intialization
+u[:] = uMax*(1-(u[:]/(D/2))**2)                 # hagan-poiselle profile
+u[0]=u[-1]=0                                    # no slip BC
+u = np.array([u,]*nx)                           # velocity field
+u = u.T                                         # transpose/align field
+maxCFL = np.max(u*dt/dx)                        # CFL condition calc.
+print('The max CFL is %s'%(maxCFL))
 
+# main function loop
 def lets_get_tubular(): 
-    Ttol = np.zeros((ny,nx)) # Tolerance check array initialization
-    T = np.ones((ny, nx))*Tw  # create a 1xn vector of 1's
-    Tn = np.ones((ny, nx))*Tw # temporary solution array
+    # array initialization
+    Ttol = np.zeros((ny,nx)) 
+    T = np.ones((ny, nx))*Tw  
+    Tn = np.ones((ny, nx))*Tw 
+    # initialize termination condition
+    # compares norms of current and previous solution arrays
     termcond = (np.abs((np.linalg.norm(Ttol)-np.linalg.norm(Tn))))/np.linalg.norm(Tn)
     stepcount = 1 # step counter
-    while termcond >= reltol: # convergence-criteria/termination-condition
+    while termcond >= reltol: 
         termcond = np.abs((np.linalg.norm(Ttol)-np.linalg.norm(Tn)))/np.linalg.norm(Tn)
         Tn = T.copy()
         # FDM vectorized solution using explicit euler and CDS
-        T[1:-1, 1:-1] = (Tn[1:-1,1:-1] - (u[1:-1,1:-1]*(dt/(2*dx))*(Tn[1:-1,2:]-Tn[1:-1,:-2]))+\
-                         lamx *(Tn[1:-1, 2:] - 2 * Tn[1:-1, 1:-1] + Tn[1:-1, :-2]) +\
-                        lamy* (Tn[2:,1:-1] - 2 * Tn[1:-1, 1:-1] + Tn[:-2, 1:-1])) \
-                         - h*D*math.pi*(Tn[1:-1,1:-1]-Tw)*dt/p/Cp*xl/Vr
+        T[1:-1, 1:-1] = (Tn[1:-1,1:-1] - (u[1:-1,1:-1]*(dt/(2*dx))*(Tn[1:-1,2:]  \
+                     -Tn[1:-1,:-2]))                                             \
+                     + lamx *(Tn[1:-1, 2:] - 2 * Tn[1:-1, 1:-1] + Tn[1:-1, :-2]) \
+                     + lamy* (Tn[2:,1:-1] - 2 * Tn[1:-1, 1:-1] + Tn[:-2, 1:-1])) \
+                     - h*D*math.pi*(Tn[1:-1,1:-1]-Tw)*dt/p/Cp*xl/Vr
+        # BCs
         T[0, :] = Tw # tubing wall temp dirichlet BC
         T[-1, :] = Tw # tubing wall temp dirichlet BC
         T[:, 0] = T0 # inlet flow temp dirichlet BC
@@ -80,7 +93,11 @@ def lets_get_tubular():
 #        linewidth=0, antialiased=True)
 #    ax.set_xlabel('$x$')
 #    ax.set_ylabel('$y$');
-    T[:]=T[:]-273.15
+    T[:]=T[:]-273.15                            # converts back to degC
+    
+    # generates plots
+    # top plot is 2D filled contour plot 
+    # bottom plot is centerline and near-wall line data points
     fig1 = plt.subplot(211)
 #    ax = fig1.gca()
 #    plt.imshow(T[:])
@@ -108,3 +125,6 @@ def lets_get_tubular():
     
     plt.show()
     print('Stepcount = %s' %(stepcount))
+    
+if __name__ == "__main__":
+    lets_get_tubular()
