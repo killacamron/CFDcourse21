@@ -1,7 +1,8 @@
 # =============================================================================
 # 
 # Explicit Finite Difference Method Code to Solve the 1D Diffusion/Heat Equation
-# Written by: Cameron Armstrong (2019)
+# Adapted by: Cameron Armstrong (2019)
+# Source: Lorena Barba, 12 Steps to NS in Python
 # Institution: Virginia Commonwealth University
 # 
 # =============================================================================

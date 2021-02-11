@@ -1,7 +1,8 @@
 # =============================================================================
 # 
 # Explicit Finite Difference Method Code to Solve the 1D Linear Transport Equation
-# Written by: Cameron Armstrong (2019)
+# Adapted by: Cameron Armstrong (2019)
+# Source: Lorena Barba, 12 Steps to NS in Python
 # Institution: Virginia Commonwealth University
 # 
 # =============================================================================
@@ -15,7 +16,7 @@ xl = 2                                      # x length
 nx = 600                                    # number of grid points
 x = np.linspace(0,xl,nx)                    # x grid 
 dx = xl/(nx-1)                              # x stepsize
-nt = 350                                  # number of timesteps
+nt = 350                                    # number of timesteps
 dt = 0.0025                                 # time stepsize
 c = 1                                       # wave speed
 g = .01                                     # gaussian variance parameter (peak width)
