@@ -28,17 +28,17 @@ D = 0.0015875                                   # tubing diameter in m
 zl = 30/100                                     # tubing length in m & x range
 rl = D/2                                        # tubing diameter & y range
 nz = 300                                        # x grid points
-nr = 25                                         # y grid points
+nr = 50                                         # y grid points
 dz = zl/(nz-1)                                  # x stepsize
 dr = rl/(nr-1)                                  # y stepsize
 k= .12                                          # thermal conductvity W/(m*K)
 p = 1750                                        # density (kg/m3)
 Cp = 1172                                       # specifc heat (J/kg/K)
 a = k/(p*Cp)                                    # thermal diffusivity (m2/s)
-sigma = .01                                     # time step factor
+sigma = .001                                     # time step factor
 dt = sigma*dz*dr/a                              # time stepsize 
 Vr = math.pi*(D/2)**2*zl                        # tubing volume (m3)
-Qmlm = 1                                        # volumetric flowrate (mL/min)
+Qmlm = 4                                        # volumetric flowrate (mL/min)
 Q = (Qmlm*10**-6)/60                            # volumetric flowrate (m3/s)
 Ac = math.pi*(D/2)**2                           # cross-sectional area (m2)
 lamz = a*dt/dz**2                               # lumped coefficient
@@ -66,12 +66,12 @@ u = u.T                                         # transpose/align field
 maxCFL = np.max(u*dt/dz)                        # CFL condition calc.
 print('The max CFL is %s'%(maxCFL))
 
-comsol_center_raw = np.genfromtxt('han_comsol_2D_center.csv',delimiter=',')
-comsol_center_L = comsol_center_raw[:,0]
-comsol_center_T = comsol_center_raw[:,1]
-comsol_wall_raw = np.genfromtxt('han_comsol_2D_wall.csv',delimiter=',')
-comsol_wall_L = comsol_wall_raw[:,0]
-comsol_wall_T = comsol_wall_raw[:,1]
+# comsol_center_raw = np.genfromtxt('han_comsol_2D_center.csv',delimiter=',')
+# comsol_center_L = comsol_center_raw[:,0]
+# comsol_center_T = comsol_center_raw[:,1]
+# comsol_wall_raw = np.genfromtxt('han_comsol_2D_wall.csv',delimiter=',')
+# comsol_wall_L = comsol_wall_raw[:,0]
+# comsol_wall_T = comsol_wall_raw[:,1]
 
 # main function loop
 def lets_get_tubular(): 
@@ -117,9 +117,9 @@ def lets_get_tubular():
 #    plt.imshow(T[:])
     cont = plt.contourf(Z,R,T[:],50)
     ax = plt.gca()
-    ax.axis('scaled')
+    #ax.axis('scaled')
     ax.axes.get_yaxis().set_visible(True)
-    plt.xlim(0,.025)
+    plt.xlim(0,zl)
     plt.yticks(np.linspace(0,rl,2),fontsize ='7')
     plt.xlabel('Tubing Length (m)')
     cbar = plt.colorbar(cont)
@@ -139,14 +139,14 @@ def lets_get_tubular():
     plt.ylabel('Temperature (degC)')
     plt.xlabel('Tubing Length (m)')
     
-    plt.figure(2)
-    plt.plot(comsol_center_L/0.3,comsol_center_T,label='Comsol-center')
-    #plt.plot(comsol_wall_L/0.3,comsol_wall_T,label='Comsol-wall')
-    plt.plot(z/0.3,centerT,label='Python-center')
-    #plt.plot(z/0.3,wallT,label='Python-wall')
-    plt.ylabel('Temperature (degC)')
-    plt.xlabel('Normalized Reactor Length')
-    plt.legend()
+    # plt.figure(2)
+    # plt.plot(comsol_center_L/0.3,comsol_center_T,label='Comsol-center')
+    # #plt.plot(comsol_wall_L/0.3,comsol_wall_T,label='Comsol-wall')
+    # plt.plot(z/0.3,centerT,label='Python-center')
+    # #plt.plot(z/0.3,wallT,label='Python-wall')
+    # plt.ylabel('Temperature (degC)')
+    # plt.xlabel('Normalized Reactor Length')
+    # plt.legend()
     
     plt.show()
     print('Stepcount = %s' %(stepcount))
